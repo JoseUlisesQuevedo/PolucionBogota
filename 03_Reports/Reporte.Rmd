@@ -1,0 +1,169 @@
+---
+title: "Reporte de Polución para `r LOCALIDAD` y Bogotá"
+output: 
+  html_document
+---
+
+
+```{r setup, include=FALSE}
+### SOURCE PLOT AND TABLE GENERATING CODES
+knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(warning = F)
+```
+
+---
+subtitle: "Periodo: `r paste0(cutoff_date," a ",last_date) `" 
+---
+
+```{r results="asis",echo=F}
+cat("
+<style>
+.leaflet-container {
+    background: #FFF;
+}
+</style>
+")
+```
+
+## Introducción
+
+<span style="font-size: 1.5em;">El siguiente reporte presenta una mirada general sobre la polución en `r LOCALIDAD` y Bogotá para los últimos 30 días desde su generación. Presentamos los datos de la localidad, seguidos de los datos de Bogotá. <br>
+
+- Para la polución, utilizamos las partículas en suspensión de menos de 2.5 micras, o $PM_{2.5}$. Presentamos la concentración promedio de estas partículas para cada localidad durante los últimos 30 días. La OMS recomienda que **al año** los niveles de $PM_{2.5}$ no excedan, en promedio, los **5 microgramos por metro cúbico.** <br>
+- Para un periódo de **24 horas**, la OMS recomienda que la concentración no exceda los **15 microgramos por métro cúbico**. Esta recomendación además sugiere que este límite no debe excederse más de 3 o 4 días al año.
+</span>
+
+
+
+# {.tabset}
+
+## `r LOCALIDAD`
+
+
+###  {.tabset}
+
+#### Polución general
+
+<span style="font-size: 1.5em;"> Para **`r LOCALIDAD`** la polución promedio del mes fue de <span style="color:red;"> `r polucion.mes.localidad` </span> microgramos por metro cúbico, con <span style="color:red;"> `r toString(dias.arriba.localidad)` </span> días arriba del límite recomendado. Esto lo coloca como la <span style="color:red;">`r rank_polucion`</span> localidad con más polución y como la <span style="color:red;">`r rank_dias`</span> con más días arriba del límite recomendado.
+</span>.
+
+ 
+
+```{r}
+plot.arriba.localidad
+```
+
+<span style="font-size: 1.5em;">La localidad cuenta con `r NUMESCUELAS` escuelas en el estudio. A continuación se muestra la polución para cada una de las escuelas de la localidad, indicando los días por arriba del límite recomendado.</span>
+
+```{r}
+plot.escuelas.localidad
+```
+
+#### Polución por escuela
+##### Polución mensual promedio
+
+
+```{r,results="asis"}
+cat('<div style="display: flex; justify-content: space-between;">')
+cat('<div style="flex-basis: 40%;">')
+mapa.localidad
+cat('</div>')
+
+cat('<div style="flex-basis: 60%;">')
+knitr::kable(tabla.polucion.escuelas)
+cat('</div>')
+cat('</div>')
+```
+
+##### Polución afuera y adentro
+<span style="font-size: 1.5em;"> Las escuelas tienen monitores de polución adentro y afuera de los salones. A continuación presentamos la polución promedio diaria en ambos puntos (afuera y adentro) para cada escuela, e indicamos aquellas que tienen <span style="color:blue;">filtro de aire </span>. Los huecos en la gráfica se deben a datos faltantes, que indican que alguno de los sensores no funcionó ese día.</span>
+
+**Escuelas con filtro**
+```{r,fig.height=18,fig.height=9}
+afuera.adentro.escuelas.filtro
+```
+**Escuelas sin filtro**
+```{r,fig.height=18,fig.height=9}
+afuera.adentro.escuelas.control
+```
+
+<span style="font-size: 1.5em;"> Adicionalmente, comparamos la polución promedio tanto adentro como afuera para las escuelas con filtros y sin filtros. </span>
+
+```{r}
+comparacion.filtro
+```
+
+
+#### Uso de los filtros
+
+<span style="font-size: 1.5em;"> Para aquellas escuelas de la localidad que tienen filtros de aire, es posible que en realidad no estén siendo utilizados. A continuación presentamos estas escuelas junto con la probabilidad de que estén utilizando sus filtros de aire, ordenadas de la menos probable a la más probable. Esto para ayudar a identificar y corregir aquellas escuelas que no están utilizando sus filtros.</span>
+
+**NOTA: Para este reporte se calcula el uso de filtro con datos de Octubre y Noviembre de 2023**
+
+```{r}
+knitr::kable(tabla.probabilidad)
+```
+
+
+#### Estado de los sensores
+
+A continuación presentamos el diagnóstico de los monitores de polución, identificando lo siguiente:
+
+- **Porcentaje de uso**: ¿Cuántas mediciones realizó sobre el total que debería realizar en los 31 días?
+
+- **Número de días sin mediciones**: ¿Cuántos días el monitor no registró *ninguna* medida?
+
+- **Status del sensor**: Presentamos la salud del sensor con base en el siguiente criterio
+  - <span style="color: green;">Ok</span>: Registró al menos 85% de las lecturas, y no más de 5 días sin lecturas
+  - <span style="color: #FAC131;">En riesgo</span>: Registró entre 50% y 85% de las lecturas, o 5-10 días sin lecturas
+  - <span style="color: red;">Fallando</span>: Registró menos del 50% de las lecturas o más de 10 días sin lecturas
+  
+```{r}
+knitr::kable(tabla.sensores)
+```
+
+
+
+
+
+## Bogotá
+
+<style>
+/* Adjust the width of the plot container */
+.tab-content img {
+    width: 100%; /* Set the width to 100% to use the full tab width */
+}
+</style>
+
+
+
+
+
+
+
+#### Polución mensual promedio
+
+```{r,echo=F,results='asis'}
+cat('<div style="display: flex; justify-content: space-between;">')
+cat('<div style="flex-basis: 40%;">')
+mapa1
+cat('</div>')
+
+cat('<div style="flex-basis: 60%;">')
+knitr::kable(tabla1)
+cat('</div>')
+cat('</div>')
+
+```
+
+#### Días arriba del límite recomendado
+
+<span style="font-size: 1.5em;">  A continuación presentamos, para cada localidad, la polución diaria promedio de los últimos 30 días. En <span style="color: red;">rojo y punteado </span> incluímos la línea de referencia de los 15 microgramos. La<span style="color: blue;"> línea azul </span> es referencia de los 5 microgramos. Además, en **paréntesis** indicamos el número de días que la localidad excedió este límite  </span>
+
+```{r,echo=F,fig.height=18,fig.height=9}
+plot1
+```
+
+
+
+
